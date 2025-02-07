@@ -311,7 +311,21 @@ CCD_Capture			u3	(
 						   );
 //D5M raw date convert to RGB data
 
-RAW2RGB				u4	(	
+
+// RAW2RGB				u4	(	
+// 							.iCLK(D5M_PIXLCLK),
+// 							.iRST(DLY_RST_1),
+// 							.iDATA(mCCD_DATA),
+// 							.iDVAL(mCCD_DVAL),
+// 							.oRed(sCCD_R),
+// 							.oGreen(sCCD_G),
+// 							.oBlue(sCCD_B),
+// 							.oDVAL(sCCD_DVAL),
+// 							.iX_Cont(X_Cont),
+// 							.iY_Cont(Y_Cont)
+// 						   );
+
+Image_Processing  u10(
 							.iCLK(D5M_PIXLCLK),
 							.iRST(DLY_RST_1),
 							.iDATA(mCCD_DATA),
@@ -322,7 +336,7 @@ RAW2RGB				u4	(
 							.oDVAL(sCCD_DVAL),
 							.iX_Cont(X_Cont),
 							.iY_Cont(Y_Cont)
-						   );
+                     );
 
 //Frame count display
 SEG7_LUT_6 			u5	(	

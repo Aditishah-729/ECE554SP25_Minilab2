@@ -1,11 +1,9 @@
-module Image_Processing(
+module greyscale (
     iCLK,
     iRST,
     iDATA,
     iDVAL,
-    oRed,
-    oGreen,
-    oBlue,
+    oGrey,
     oDVAL,
     iX_Cont,
     iY_Cont
@@ -33,9 +31,7 @@ reg				mDVAL;
 wire     [13:0]  RGB_avg;
 
 
-assign	oRed	=	RGB_avg[13:2];
-assign	oGreen	=	RGB_avg[13:2];
-assign	oBlue	=	RGB_avg[13:2];
+assign	oGrey	=	RGB_avg[13:2];
 
 assign RGB_avg = {1'b0, mCCD_B} +  {1'b0, mCCD_R} + mCCD_G;
 
