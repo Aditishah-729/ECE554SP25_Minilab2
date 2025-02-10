@@ -311,8 +311,7 @@ CCD_Capture			u3	(
 						   );
 //D5M raw date convert to RGB data
 
-
-// RAW2RGB				u4	(	
+// RAW2RGB				u4a	(	
 // 							.iCLK(D5M_PIXLCLK),
 // 							.iRST(DLY_RST_1),
 // 							.iDATA(mCCD_DATA),
@@ -325,18 +324,57 @@ CCD_Capture			u3	(
 // 							.iY_Cont(Y_Cont)
 // 						   );
 
-Image_Processing  u10(
+wire [11:0] rgb_R, rgb_G, rgb_B;
+wire RGB_VAL;
+
+RAW2RGB				u4a	(	
 							.iCLK(D5M_PIXLCLK),
 							.iRST(DLY_RST_1),
 							.iDATA(mCCD_DATA),
 							.iDVAL(mCCD_DVAL),
-							.oRed(sCCD_R),
-							.oGreen(sCCD_G),
-							.oBlue(sCCD_B),
-							.oDVAL(sCCD_DVAL),
+							.oRed(rgb_R),
+							.oGreen(rgb_G),
+							.oBlue(rgb_B),
+							.oDVAL(RGB_VAL),
+							.iX_Cont(X_Cont),
+							.iY_Cont(Y_Cont)
+						   );
+
+wire [11:0] grey_RGB;
+wire grey_VAL;
+
+greyscale         u4b (
+            .iCLK(iCLK),
+            .iRST(iRST),
+            .iDATA(iDATA),
+            .iDVAL(iDVAL),
+            .oGrey(grey_RGB),
+            .oDVAL(grey_VAL),
+            .iX_Cont(iX_Cont),
+            .iY_Cont(iY_Cont)
+            );                    
+
+wire [11:0] conv_R, conv_G, conv_B;
+wire conv_VAL;
+
+Image_Processing  u4c (
+							.iCLK(D5M_PIXLCLK),
+							.iRST(DLY_RST_1),
+							.iDATA(mCCD_DATA),
+							.iDVAL(mCCD_DVAL),
+                     .iSW(SW[2]),
+							.oRed(conv_R),
+							.oGreen(conv_G),
+							.oBlue(conv_B),
+							.oDVAL(conv_VAL),
 							.iX_Cont(X_Cont),
 							.iY_Cont(Y_Cont)
                      );
+
+assign sCCD_R = (SW[3] ? rgb_R : (SW[4] ? grey_RGB : conv_R));
+assign sCCD_G = (SW[3] ? rgb_G : (SW[4] ? grey_RGB : conv_G));
+assign sCCD_B = (SW[3] ? rgb_B : (SW[4] ? grey_RGB : conv_B));
+assign sCCD_DVAL = (SW[3] ? RGB_VAL : (SW[4] ? grey_VAL : conv_VAL));
 
 //Frame count display
 SEG7_LUT_6 			u5	(	
