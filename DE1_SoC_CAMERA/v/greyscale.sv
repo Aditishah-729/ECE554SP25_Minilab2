@@ -15,9 +15,7 @@ input	[11:0]	iDATA;
 input			iDVAL;
 input			iCLK;
 input			iRST;
-output	[11:0]	oRed;
-output	[11:0]	oGreen;
-output	[11:0]	oBlue;
+output	[11:0]	oGrey;
 output			oDVAL;
 
 wire	[11:0]	mDATA_0;
@@ -31,10 +29,10 @@ reg				mDVAL;
 wire     [13:0]  RGB_avg;
 
 
-assign	oGrey	=	RGB_avg[13:2];
+
 
 assign RGB_avg = {1'b0, mCCD_B} +  {1'b0, mCCD_R} + mCCD_G;
-
+assign	oGrey	=	RGB_avg[13:2];
 assign	oDVAL	=	mDVAL;
 
 Line_Buffer1 	u0	(	.clken(iDVAL),
@@ -58,7 +56,7 @@ begin
 	begin
 		mDATAd_0	<=	mDATA_0;
 		mDATAd_1	<=	mDATA_1;
-		mDVAL		<=	{iY_Cont[0]|iX_Cont[0]}	?	1'b0	:	iDVAL;
+		mDVAL		<=	{iY_Cont[0]|iX_Cont[0]}	?	1'b0 : iDVAL;
 		if({iY_Cont[0],iX_Cont[0]}==2'b10)
 		begin
 			mCCD_R	<=	mDATA_0;
