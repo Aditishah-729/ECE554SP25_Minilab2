@@ -1,0 +1,65 @@
+Resource Usage Summary report for DE1_SoC_CAMERA
+Thu Feb 13 12:12:44 2025
+Quartus Prime Version 23.1std.0 Build 991 11/28/2023 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Analysis & Synthesis Resource Usage Summary
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2023  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details, at
+https://fpgasoftware.intel.com/eula.
+
+
+
++-----------------------------------------------------------------+
+; Analysis & Synthesis Resource Usage Summary                     ;
++---------------------------------------------+-------------------+
+; Resource                                    ; Usage             ;
++---------------------------------------------+-------------------+
+; Estimate of Logic utilization (ALMs needed) ; 874               ;
+;                                             ;                   ;
+; Combinational ALUT usage for logic          ; 1351              ;
+;     -- 7 input functions                    ; 12                ;
+;     -- 6 input functions                    ; 299               ;
+;     -- 5 input functions                    ; 157               ;
+;     -- 4 input functions                    ; 199               ;
+;     -- <=3 input functions                  ; 684               ;
+;                                             ;                   ;
+; Dedicated logic registers                   ; 1311              ;
+;                                             ;                   ;
+; I/O pins                                    ; 226               ;
+; Total MLAB memory bits                      ; 0                 ;
+; Total block memory bits                     ; 166696            ;
+;                                             ;                   ;
+; Total DSP Blocks                            ; 8                 ;
+;                                             ;                   ;
+; Total PLLs                                  ; 4                 ;
+;     -- PLLs                                 ; 4                 ;
+;                                             ;                   ;
+; Maximum fan-out node                        ; D5M_PIXLCLK~input ;
+; Maximum fan-out                             ; 620               ;
+; Total fan-out                               ; 12974             ;
+; Average fan-out                             ; 3.87              ;
++---------------------------------------------+-------------------+
+
+
