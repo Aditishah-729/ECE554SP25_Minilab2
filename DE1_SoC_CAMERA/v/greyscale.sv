@@ -35,7 +35,7 @@ wire     [13:0]  RGB_avg;
 
 
 
-
+// Averaging the R G G B values to get the greyscale values
 assign RGB_avg = {1'b0, mCCD_B} +  {1'b0, mCCD_R} + mCCD_G;
 assign	oGrey	=	RGB_avg[13:2];
 assign	oDVAL	=	mDVAL;
