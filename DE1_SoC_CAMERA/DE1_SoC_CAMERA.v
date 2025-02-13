@@ -327,6 +327,8 @@ CCD_Capture       u3 (
 wire [11:0] rgb_R, rgb_G, rgb_B;
 wire RGB_VAL;
 
+// one of three will display at any given time 
+      
 RAW2RGB           u4a   (  
                      .iCLK(D5M_PIXLCLK),
                      .iRST(DLY_RST_1),
@@ -371,6 +373,10 @@ Image_Processing  u4c (
                      .iY_Cont(Y_Cont)
                      );
 
+// SW3                =>   RGB
+// !SW3 & SW2         =>   Greyscale
+// !Sw3 & !SW2 & !SW4 =>   Horizontal edge
+// !Sw3 & !SW2 & SW4  =>   Vertical edge
 assign sCCD_R = (SW[3] ? rgb_R : (SW[2] ? grey_RGB : conv_R));
 assign sCCD_G = (SW[3] ? rgb_G : (SW[2] ? grey_RGB : conv_G));
 assign sCCD_B = (SW[3] ? rgb_B : (SW[2] ? grey_RGB : conv_B));
