@@ -1,3 +1,137 @@
+////////////////////////////////////////////////////////
+// Module: Image_Processor.sv     		      //
+// Authors: Aditi SHah, Cullen Krasselt		      //
+////////////////////////////////////////////////////////
+
+module Image_Processing(
+    output [11:0] oRed,
+    output [11:0] oGreen,
+    output [11:0] oBlue,
+    output        oDVAL,
+    input  [10:0] iX_Cont,
+    input  [10:0] iY_Cont,
+    input  [11:0] iDATA,
+    input         iDVAL,
+    input         iCLK,
+    input         iRST,
+    input         iSW
+);
+    
+    reg        mDVAL;
+    ///////////////////////////////////////////
+    // sub-module for greyscale conversion 
+    //////////////////////////////////////////
+    logic [11:0] o_grey;
+    logic oDVAL_grey;
+
+    greyscale u2 (
+        .iCLK(iCLK),
+        .iRST(iRST),
+        .iDATA(iDATA),
+        .iDVAL(iDVAL),
+        .oGrey(o_grey),
+        .oDVAL(oDVAL_grey),
+        .iX_Cont(iX_Cont),
+        .iY_Cont(iY_Cont)
+    );
+
+    ///////////////////////////////////////////
+    // line buffer to hold one set of values
+    //////////////////////////////////////////
+
+
+    logic [11:0] rowc0, rowc1, rowc2;
+    logic [11:0] rowb0, rowb1, rowb2;
+    logic [11:0] rowa0, rowa1, rowa2;
+
+    Line_Buffer2 u1 (
+        .clken(mDVAL),
+        .clock(iCLK),
+        .shiftin(o_grey),
+        .shiftout(),
+        .taps0x(rowc0),
+        .taps1x(rowc1),
+        .taps2x(rowc2)
+    );
+    
+    //////////////////////////////////////////
+    // 3x3 filter 
+    //////////////////////////////////////////
+
+    logic signed [11:0] filter [8:0];
+    // iSW = is horizontal
+    assign filter[0] = -12'd1;
+    assign filter[1] = iSW ? -12'd2 :  12'd0;
+    assign filter[2] = iSW ? -12'd1 :  12'd1;
+    assign filter[3] = iSW ?  12'd0 : -12'd2;
+    assign filter[4] =  12'd0;
+    assign filter[5] = iSW ?  12'd0 :  12'd2;
+    assign filter[6] = iSW ? 12'd1 : -12'd1;
+    assign filter[7] = iSW ?  12'd2 :  12'd0;
+    assign filter[8] =  12'd1;
+
+
+    //////////////////////////////////////////
+    // double flop to get 9 values            
+    //////////////////////////////////////////
+
+    always @(posedge iCLK or negedge iRST) begin
+        if (!iRST) begin
+            rowb0  <= 0;
+            rowb1  <= 0;
+            rowb2  <= 0;
+            rowa0 <= 0;
+            rowa1 <= 0;
+            rowa2 <= 0;
+            mDVAL     <= 0;
+        end else begin
+            rowb0  <= rowc0;
+            rowb1  <= rowc1;
+            rowb2  <= rowc2;
+            rowa0 <= rowb0;
+            rowa1 <= rowb1;
+            rowa2 <= rowb2;
+            mDVAL     <= ({iY_Cont[0], iX_Cont[0]} == 2'b00) ? iDVAL : 1'b0;
+            
+        end
+    end
+
+    //////////////////////////////////////////
+    // convolution
+    //////////////////////////////////////////
+
+    logic [11:0] conv_out, conv_abs, conv_final;
+
+    assign conv_out = (rowa0 * filter[8]) + (rowa1 * filter[7]) + (rowa2 * filter[6]) +
+                      (rowb0 * filter[5]) + (rowb1 * filter[4]) + (rowb2 * filter[3]) +
+                      (rowc0 * filter[2]) + (rowc1 * filter[1]) + (rowc2 * filter[0]);
+
+    //////////////////////////////////////////
+    // absolute + edge-case elimination 
+    //////////////////////////////////////////
+
+    Abs a1 (
+        .in(conv_out),
+        .out(conv_abs)
+    );
+
+    assign conv_final = ((iX_Cont > 9) && (iX_Cont < 1270) &&
+                    (iY_Cont > 9) && (iY_Cont < 940)) ? conv_abs : 12'b0;
+
+    //////////////////////////////////////////
+    // assign final output values  
+    //////////////////////////////////////////
+
+    assign oRed = conv_final;
+    assign oBlue = conv_final;
+    assign oGreen = conv_final;
+    assign oDVAL = mDVAL;
+	
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 //    module Image_Processing(
 //     iCLK,
 //     iRST,
@@ -789,139 +923,3 @@
 //     assign oGrey_B = output_conv;
 
 // endmodule
-
-
-// --------------------------------------------------------------------
-//
-// Module: Image_Processor
-// Authors: Cullen, Aditi Shah
-//
-// --------------------------------------------------------------------
-
-module Image_Processing(
-    output [11:0] oRed,
-    output [11:0] oGreen,
-    output [11:0] oBlue,
-    output        oDVAL,
-    input  [10:0] iX_Cont,
-    input  [10:0] iY_Cont,
-    input  [11:0] iDATA,
-    input         iDVAL,
-    input         iCLK,
-    input         iRST,
-    input         iSW
-);
-    
-    reg        mDVAL;
-    ///////////////////////////////////////////
-    // sub-module for greyscale conversion 
-    //////////////////////////////////////////
-    logic [11:0] o_grey;
-    logic oDVAL_grey;
-
-    greyscale u2 (
-        .iCLK(iCLK),
-        .iRST(iRST),
-        .iDATA(iDATA),
-        .iDVAL(iDVAL),
-        .oGrey(o_grey),
-        .oDVAL(oDVAL_grey),
-        .iX_Cont(iX_Cont),
-        .iY_Cont(iY_Cont)
-    );
-
-    ///////////////////////////////////////////
-    // line buffer to hold one set of values
-    //////////////////////////////////////////
-
-
-    logic [11:0] rowc0, rowc1, rowc2;
-    logic [11:0] rowb0, rowb1, rowb2;
-    logic [11:0] rowa0, rowa1, rowa2;
-
-    Line_Buffer2 u1 (
-        .clken(mDVAL),
-        .clock(iCLK),
-        .shiftin(o_grey),
-        .shiftout(),
-        .taps0x(rowc0),
-        .taps1x(rowc1),
-        .taps2x(rowc2)
-    );
-    
-    //////////////////////////////////////////
-    // 3x3 filter 
-    //////////////////////////////////////////
-
-    logic signed [11:0] filter [8:0];
-    // iSW = is horizontal
-    assign filter[0] = -12'd1;
-    assign filter[1] = iSW ? -12'd2 :  12'd0;
-    assign filter[2] = iSW ? -12'd1 :  12'd1;
-    assign filter[3] = iSW ?  12'd0 : -12'd2;
-    assign filter[4] =  12'd0;
-    assign filter[5] = iSW ?  12'd0 :  12'd2;
-    assign filter[6] = iSW ? 12'd1 : -12'd1;
-    assign filter[7] = iSW ?  12'd2 :  12'd0;
-    assign filter[8] =  12'd1;
-
-
-    //////////////////////////////////////////
-    // double flop to get 9 values            
-    //////////////////////////////////////////
-
-    always @(posedge iCLK or negedge iRST) begin
-        if (!iRST) begin
-            rowb0  <= 0;
-            rowb1  <= 0;
-            rowb2  <= 0;
-            rowa0 <= 0;
-            rowa1 <= 0;
-            rowa2 <= 0;
-            mDVAL     <= 0;
-        end else begin
-            rowb0  <= rowc0;
-            rowb1  <= rowc1;
-            rowb2  <= rowc2;
-            rowa0 <= rowb0;
-            rowa1 <= rowb1;
-            rowa2 <= rowb2;
-            mDVAL     <= ({iY_Cont[0], iX_Cont[0]} == 2'b00) ? iDVAL : 1'b0;
-            
-        end
-    end
-
-    //////////////////////////////////////////
-    // convolution
-    //////////////////////////////////////////
-
-    logic [11:0] conv_out, conv_abs, conv_final;
-
-    assign conv_out = (rowa0 * filter[8]) + (rowa1 * filter[7]) + (rowa2 * filter[6]) +
-                      (rowb0 * filter[5]) + (rowb1 * filter[4]) + (rowb2 * filter[3]) +
-                      (rowc0 * filter[2]) + (rowc1 * filter[1]) + (rowc2 * filter[0]);
-
-    //////////////////////////////////////////
-    // absolute + edge-case elimination 
-    //////////////////////////////////////////
-
-    Abs a1 (
-        .in(conv_out),
-        .out(conv_abs)
-    );
-
-    assign conv_final = ((iX_Cont > 9) && (iX_Cont < 1270) &&
-                    (iY_Cont > 9) && (iY_Cont < 940)) ? conv_abs : 12'b0;
-
-    //////////////////////////////////////////
-    // assign final output values  
-    //////////////////////////////////////////
-
-    assign oRed = conv_final;
-    assign oBlue = conv_final;
-    assign oGreen = conv_final;
-    assign oDVAL = mDVAL;
-
-    
-
-endmodule
